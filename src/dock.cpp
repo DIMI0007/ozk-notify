@@ -474,11 +474,12 @@ void StreamDock::rebuildNow()
     auto* footerWidget=new QWidget(this);
     footerWidget->setObjectName("Footer");
     auto* footer=new QVBoxLayout(footerWidget);footer->setContentsMargins(0,0,0,0);footer->setSpacing(0);
-    auto* credit=new QLabel("developed by <a href=\"https://www.youtube.com/channel/UCTAKYR3T2Ud8zZgNShgQfyw/\" style=\"color:#59dfff;text-decoration:none;\">OTMOPOZOK</a> · v" STREAM_NOTIFY_VERSION,footerWidget);
+    auto* credit=new QLabel("✦ <span style=\"color:#8ea1b8;\">by</span> <a href=\"https://www.youtube.com/channel/UCTAKYR3T2Ud8zZgNShgQfyw/\" style=\"color:#57dfd1;text-decoration:none;font-weight:700;\">OTMOPOZOK</a> <span style=\"color:#5e7790;\">·</span> <span style=\"color:#b3c5d7;\">v" STREAM_NOTIFY_VERSION "</span>",footerWidget);
     credit->setObjectName("Credit");credit->setTextFormat(Qt::RichText);
     credit->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::LinksAccessibleByKeyboard);
     credit->setOpenExternalLinks(true);credit->setAlignment(Qt::AlignCenter);
-    credit->setFixedHeight(20);credit->setStyleSheet("color:#9299a5;background:#080f18;font-size:11px;");
+    credit->setFixedHeight(22);credit->setStyleSheet("color:#9badc2;background:#0b1723;border-top:1px solid #263b50;font-size:10px;");
+    credit->setToolTip("Stream Notify · OTMOPOZOK");
     footer->addWidget(credit);
     root_->addWidget(footerWidget);
     if(!pendingFocus_.isEmpty()) {
