@@ -1,10 +1,10 @@
-# Stream Notify
+# OZK Notify
 
 **Twitch, YouTube and Kick stream announcements, plus donation messages from OBS to Telegram and Discord.** The plugin runs on your computer without a project-operated server. [Русский](../README.md).
 
 | Waiting for a stream | During a broadcast |
 | --- | --- |
-| ![Stream Notify home dock](screenshots/home.png) | ![Outputs, bitrate, and graphs](screenshots/monitoring.png) |
+| ![OZK Notify home dock](screenshots/home.png) | ![Outputs, bitrate, and graphs](screenshots/monitoring.png) |
 
 *Version 1.0.14 UI previews were made in an isolated test environment. Shown accounts and outputs are sample data.*
 [Narrow 275 px dock](screenshots/home-narrow.png).
@@ -16,17 +16,17 @@
 - Set recipients, text, and announcement delay in the OBS dock. See the latest delivery result at a glance.
 - Receive DonationAlerts and DonatePay donation notifications with sender, amount, message, and configurable thresholds. [Donation setup](../README_DONATIONS_RU.md).
 - Monitor active outputs: **LIVE**, current bitrate, a graph of the last 30 minutes, and transferred data.
-- Stream Stats can show Notify's measured CPU, tracked data and session traffic. Settings and donation delivery history stay local; Windows protects stored secrets.
+- OZK Stats can show Notify's measured CPU, tracked data and session traffic. Settings and donation delivery history stay local; Windows protects stored secrets.
 
 ## How the plugins work together
 
-Stream Notify works on its own when you sign in here and configure recipients. If Stream Chat is installed, Notify may use its protected Twitch and YouTube sign-ins and its Kick channel name only to check live status. Stream Stats can read Notify's local counters; it does not send announcements.
+OZK Notify works on its own when you sign in here and configure recipients. If OZK Chat is installed, Notify may use its protected Twitch and YouTube sign-ins and its Kick channel name only to check live status. OZK Stats can read Notify's local counters; it does not send announcements.
 
 ## Install
 
-1. Close OBS and [download the latest successful build](https://github.com/DIMI0007/stream-notify/actions/workflows/build-test-windows.yml).
+1. Close OBS and [download the latest successful build](https://github.com/DIMI0007/ozk-notify/actions/workflows/build-test-windows.yml).
 2. Copy the entire `stream-notify` folder into `C:\ProgramData\obs-studio\plugins\`. Replace the whole folder when updating.
-3. Start OBS, open the **Stream Notify** dock, and configure recipients. Test buttons verify sending without a live stream.
+3. Start OBS, open the **OZK Notify** dock, and configure recipients. Test buttons verify sending without a live stream.
 
 Target: **OBS 33, Windows x64**. `BUILD_INFO.json` in the archive identifies the version and source revision. The build is currently unsigned.
 

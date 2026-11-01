@@ -531,7 +531,7 @@ void DonationEngine::checkDonatePay() {
 void DonationEngine::previewTest(int level) {
     sn::CpuScope snCpuScope;
     const auto& s=store_->current;
-    Donation d; d.service="Stream Notify TEST";d.id="test";d.currency="RUB";const auto thresholds=s.donations.thresholds.value("RUB");
+    Donation d; d.service="OZK Notify TEST";d.id="test";d.currency="RUB";const auto thresholds=s.donations.thresholds.value("RUB");
     d.amount=thresholds.size()==3 && level>=0 && level<3?thresholds.at(level):100;
     d.donor="Test donor";d.message="Test donation";
     QString body=donationMessage(d,s.donations,level,streamUrl(s));

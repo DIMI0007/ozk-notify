@@ -1,7 +1,7 @@
-Stream Notify — тестовая Windows DLL для OBS 33.0.0 x64
+OZK Notify — тестовая Windows DLL для OBS 33.0.0 x64
 
-Сборки: https://github.com/DIMI0007/stream-notify/actions/workflows/build-test-windows.yml
-В последней успешной сборке скачайте StreamNotify-Test-DLL-OBS33-Windows-x64.
+Сборки: https://github.com/DIMI0007/ozk-notify/actions/workflows/build-test-windows.yml
+В последней успешной сборке скачайте OZKNotify-1.0.16-OBS33-Windows-x64.
 Для повторного запуска выберите Run workflow. Ключи сервисов для CI не нужны.
 
 Установка: docs/TEST_WINDOWS_RU.md

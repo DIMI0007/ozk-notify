@@ -1,4 +1,4 @@
-name: Build Stream Notify test DLL (Windows)
+name: Build OZK Notify test DLL (Windows)
 on:
   push:
     branches: [main, "codex/release-final", "codex/unify-header"]
@@ -45,7 +45,7 @@ jobs:
           Remove-Item Env:QT_SCALE_FACTOR
       - uses: actions/upload-artifact@v4
         with:
-          name: StreamNotify-UI-Previews
+          name: OZKNotify-UI-Previews
           path: ui-previews/
           if-no-files-found: error
       - name: Include original PNG preview diagnostics
@@ -78,7 +78,7 @@ jobs:
             $signature = Get-AuthenticodeSignature -LiteralPath $_.FullName
             [ordered]@{ file = $_.FullName.Substring((Resolve-Path package).Path.Length + 1); sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash; signature = [string]$signature.Status }
           })
-          [ordered]@{ product='Stream Notify'; version=$spec.version; commit=$env:GITHUB_SHA; run=$env:GITHUB_RUN_ID; obs='33.0.0'; qt='6.11.1'; packageType='unsigned-test-build'; files=$dlls } | ConvertTo-Json -Depth 5 | Set-Content package/BUILD_INFO.json -Encoding utf8
+          [ordered]@{ product='OZK Notify'; version=$spec.version; commit=$env:GITHUB_SHA; run=$env:GITHUB_RUN_ID; obs='33.0.0'; qt='6.11.1'; packageType='unsigned-test-build'; files=$dlls } | ConvertTo-Json -Depth 5 | Set-Content package/BUILD_INFO.json -Encoding utf8
       - name: Verify packaged TLS and Telegram HTTPS without credentials
         shell: pwsh
         run: |
@@ -89,7 +89,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
-          name: StreamNotify-Test-DLL-OBS33-Windows-x64
+          name: OZKNotify-1.0.16-OBS33-Windows-x64
           path: package/
           if-no-files-found: error
 
@@ -97,7 +97,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: StreamNotify-UI-Diagnostics
+          name: OZKNotify-UI-Diagnostics
           path: |
             ui-previews/**/*.png
             ui-previews/*.png

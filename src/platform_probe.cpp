@@ -105,11 +105,11 @@ QString PlatformProbe::twitchApiClient()const{
 }
 QString PlatformProbe::youtubeAccount()const{
     if(!available(youtubeToken_))return "YouTube: connect account";
-    return youtubeFromChat_?"YouTube: Stream Chat account":"YouTube: Stream Notify account";
+    return youtubeFromChat_?"YouTube: OZK Chat account":"YouTube: OZK Notify account";
 }
 QString PlatformProbe::twitchAccount()const{
     if(!available(twitchToken_))return "Twitch: connect account";
-    return twitchFromChat_?"Twitch: Stream Chat account":"Twitch: Stream Notify account";
+    return twitchFromChat_?"Twitch: OZK Chat account":"Twitch: OZK Notify account";
 }
 void PlatformProbe::setYouTube(LivePlatform value){
     if(value.phase==LivePhase::Live&&value.confirmed)lastYouTubeId_=value.id;
@@ -192,7 +192,7 @@ void PlatformProbe::checkKick(){
         if(manual.scheme()!="https"||(manual.host()!="kick.com"&&manual.host()!="www.kick.com")||!manual.userInfo().isEmpty()||manual.hasQuery()||!manual.fragment().isEmpty()){failKick("Kick: check the channel link");return;}
         channel=manual.path();if(channel.startsWith('/'))channel.remove(0,1);if(channel.endsWith('/'))channel.chop(1);
     }else channel=chatKick_.load().value("channel").toString();
-    if(!QRegularExpression("\\A[a-zA-Z0-9_-]{1,100}\\z").match(channel).hasMatch()){failKick("Kick: enter a channel link or configure Stream Chat");return;}
+    if(!QRegularExpression("\\A[a-zA-Z0-9_-]{1,100}\\z").match(channel).hasMatch()){failKick("Kick: enter a channel link or configure OZK Chat");return;}
     kickBusy_=true;const auto expected=kickManualId_;
     request(QUrl("https://kick.com/api/v2/channels/"+channel.toLower()),"GET",{},{},{},[this,channel,expected](int http,QJsonObject data){
         kickBusy_=false;if(!kickLocal_||expected!=kickManualId_)return;
@@ -207,7 +207,7 @@ void PlatformProbe::checkKick(){
 }
 void PlatformProbe::checkYouTube(){
     if(stopping_||youtubeBusy_)return;
-    if(!available(youtubeToken_)){failYouTube("YouTube account not connected; sign in or use Stream Chat");return;}
+    if(!available(youtubeToken_)){failYouTube("YouTube account not connected; sign in or use OZK Chat");return;}
     if(expired(youtubeToken_)){refreshYouTube();return;}
     youtubeBusy_=true;
     if(!youtube_.confirmed){LivePlatform starting=youtube_;starting.phase=LivePhase::Starting;setYouTube(starting);}
@@ -234,7 +234,7 @@ void PlatformProbe::checkYouTube(){
 }
 void PlatformProbe::checkTwitch(){
     if(stopping_||twitchBusy_)return;
-    if(!available(twitchToken_)){failTwitch("Twitch account not connected; sign in or use Stream Chat");return;}
+    if(!available(twitchToken_)){failTwitch("Twitch account not connected; sign in or use OZK Chat");return;}
     if(twitchLogin_.isEmpty()){validateTwitch();return;}
     twitchBusy_=true;
     if(!twitch_.confirmed){LivePlatform starting=twitch_;starting.phase=LivePhase::Starting;setTwitch(starting);}
@@ -274,7 +274,7 @@ void PlatformProbe::refreshYouTube(){
         if(available(updated)&&updated.value("access_token")!=youtubeToken_.value("access_token")){
             youtubeToken_=updated;checkYouTube();return;
         }
-        failYouTube("Stream Chat YouTube token expired; reconnect Stream Chat or sign in here");return;
+        failYouTube("OZK Chat YouTube token expired; reconnect OZK Chat or sign in here");return;
     }
     const QString secret=googleSecret();
     if(refresh.isEmpty()||secret.isEmpty()){failYouTube("YouTube authorization expired; sign in again");return;}
@@ -297,7 +297,7 @@ void PlatformProbe::refreshTwitch(){
         if(available(updated)&&updated.value("access_token")!=twitchToken_.value("access_token")){
             twitchToken_=updated;twitchLogin_.clear();validateTwitch();return;
         }
-        failTwitch("Stream Chat Twitch token expired; reconnect Stream Chat or sign in here");return;
+        failTwitch("OZK Chat Twitch token expired; reconnect OZK Chat or sign in here");return;
     }
     if(refresh.isEmpty()){failTwitch("Twitch authorization expired; sign in again");return;}
     twitchBusy_=true;

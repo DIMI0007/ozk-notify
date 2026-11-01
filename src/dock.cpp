@@ -248,7 +248,7 @@ public:
     explicit CreditFooter(QWidget* parent=nullptr):QWidget(parent) {
         setFixedHeight(20);setMouseTracking(true);setFocusPolicy(Qt::StrongFocus);setAttribute(Qt::WA_OpaquePaintEvent);
         setAccessibleName("developed by OTMOPOZOK — YouTube");
-        setToolTip(QString("Stream Notify %1 (%2)\nhttps://www.youtube.com/channel/UCTAKYR3T2Ud8zZgNShgQfyw/").arg(STREAM_NOTIFY_VERSION,STREAM_NOTIFY_BUILD));
+        setToolTip(QString("OZK Notify %1 (%2)\nhttps://www.youtube.com/channel/UCTAKYR3T2Ud8zZgNShgQfyw/").arg(STREAM_NOTIFY_VERSION,STREAM_NOTIFY_BUILD));
     }
 protected:
     void paintEvent(QPaintEvent*) override {
@@ -422,10 +422,12 @@ void StreamDock::rebuildNow()
     auto* h = new QHBoxLayout;
     h->setContentsMargins(2,2,2,2);
     h->setSpacing(7);
-    auto* brand = new ServiceBadge("Stream Notify");
+    auto* brand = new ServiceBadge("OZK Notify");
     brand->setObjectName("HeaderBrand");
     h->addWidget(brand);
-    auto* t = label("Stream Notify", "Title");
+    auto* t = label("<span style='color:#57dfd1'>OZK</span> Notify", "Title");
+    t->setTextFormat(Qt::RichText);
+    t->setAccessibleName("OZK Notify");
     title_ = t;
     h->addWidget(t, 1);
     auto* manualButton=btn(QString());
@@ -479,7 +481,7 @@ void StreamDock::rebuildNow()
     credit->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::LinksAccessibleByKeyboard);
     credit->setOpenExternalLinks(true);credit->setAlignment(Qt::AlignCenter);
     credit->setFixedHeight(20);credit->setStyleSheet("color:#9badc2;background:#0b1723;border-top:1px solid #263b50;font-size:10px;");
-    credit->setToolTip("Stream Notify · OTMOPOZOK");
+    credit->setToolTip("OZK Notify · OTMOPOZOK");
     footer->addWidget(credit);
     root_->addWidget(footerWidget);
     if(!pendingFocus_.isEmpty()) {
@@ -582,7 +584,7 @@ QWidget* StreamDock::buildHome()
     auto* status=card(&v);
     if(!broadcasting_)status->setObjectName("WaitingCard");
     auto* statusRow=new QHBoxLayout;statusRow->setSpacing(7);
-    statusRow->addWidget(new ServiceBadge(broadcasting_?"Stream Notify":"Waiting"));
+    statusRow->addWidget(new ServiceBadge(broadcasting_?"OZK Notify":"Waiting"));
     auto* statusText=new QVBoxLayout;statusText->setSpacing(2);
     statusText->addWidget(label(broadcasting_?uiText("В эфире","Live"):uiText("Ожидание трансляции","Waiting for stream"),broadcasting_?"Good":"Waiting"));
     statusText->addWidget(label(store_.current.enabled
@@ -1015,11 +1017,11 @@ QWidget* StreamDock::buildConnections()
     connect(tw, &QLineEdit::textChanged, this, [this](const QString& s) {store_.current.twitchUrl=s;changeSettings();});
     v->addWidget(tw);
     section(v,uiText("Подтверждение активности","Live verification"));
-    v->addWidget(label(uiText("Можно войти здесь или использовать аккаунты Stream Chat. Защищённые токены Stream Chat читаются только для проверки эфира.",
-                              "Sign in here or use Stream Chat accounts. Protected Stream Chat tokens are read only to verify live status."),"Hint"));
+    v->addWidget(label(uiText("Можно войти здесь или использовать аккаунты OZK Chat. Защищённые токены OZK Chat читаются только для проверки эфира.",
+                              "Sign in here or use OZK Chat accounts. Protected OZK Chat tokens are read only to verify live status."),"Hint"));
     v->addWidget(label("Kick", "Hint"));auto* ki=new QLineEdit(store_.current.kickUrl);ki->setObjectName("KickUrl");ki->setPlaceholderText("https://kick.com/channel");
     connect(ki,&QLineEdit::textChanged,this,[this](const QString& value){store_.current.kickUrl=value;changeSettings();});v->addWidget(ki);
-    v->addWidget(label(uiText("Можно оставить пустым, если канал Kick настроен в Stream Chat.","Leave empty to use the Kick channel configured in Stream Chat."),"Hint"));
+    v->addWidget(label(uiText("Можно оставить пустым, если канал Kick настроен в OZK Chat.","Leave empty to use the Kick channel configured in OZK Chat."),"Hint"));
     if(!platforms_.kick().error.isEmpty())v->addWidget(label(platforms_.kick().error,"Hint"));
     v->addWidget(label(platforms_.youtubeAccount(),"Hint"));
     if(!platforms_.youtube().error.isEmpty())v->addWidget(label(platforms_.youtube().error,"Hint"));
@@ -1189,7 +1191,7 @@ QWidget* StreamDock::buildDonations()
             uiText("Войдите через браузер. Ключ сохранится автоматически; ключ виджета здесь не нужен.","Sign in through your browser. The account key is saved automatically; a widget key is not needed."));
         connect(help,&QPushButton::clicked,this,[title] {
             QDesktopServices::openUrl(QUrl(title=="DonatePay"?"https://donatepay.ru/page/api":
-                "https://github.com/DIMI0007/stream-notify/blob/main/README_DONATIONS_RU.md#donationalerts"));
+                "https://github.com/DIMI0007/ozk-notify/blob/main/README_DONATIONS_RU.md#donationalerts"));
         });
         rowWith(l,verify,help);
         outer->addWidget(box);
@@ -1375,7 +1377,7 @@ QWidget* StreamDock::buildInterface()
 
     auto* about = card(&v);
     section(v,uiText("О плагине", "About"));
-    auto* versionLabel=label(QString("Stream Notify %1\n%2").arg(STREAM_NOTIFY_VERSION,STREAM_NOTIFY_BUILD));
+    auto* versionLabel=label(QString("OZK Notify %1\n%2").arg(STREAM_NOTIFY_VERSION,STREAM_NOTIFY_BUILD));
     versionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     v->addWidget(versionLabel);
     v->addWidget(label(uiText("Анонсы стримов и донатов.\nНастройки хранятся на этом ПК.", "Stream and donation announcements.\nSettings are stored on this PC."), "Hint"));
@@ -1888,7 +1890,7 @@ void StreamDock::testChannel(Channel channel)
     if(tg) {testingTelegram_=true;transientTelegram_=uiText("Проверяем…", "Testing…");}
     else {testingDiscord_=true;transientDiscord_=uiText("Проверяем…", "Testing…");}
     rebuild();
-    const QString message = uiText("🧪 Stream Notify — тестовое сообщение", "🧪 Stream Notify — test message");
+    const QString message = uiText("🧪 OZK Notify — тестовое сообщение", "🧪 OZK Notify — test message");
     testSender_.send(channel,snap,message,[this,channel](Delivery d) {
         if(shuttingDown_) return;
         const QString text = d.status == Outcome::Sent ? uiText("✓ Тест отправлен", "✓ Test sent") :

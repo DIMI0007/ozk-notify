@@ -36,7 +36,7 @@ public:
 #ifdef Q_OS_WIN
         auto plain=QJsonDocument(value).toJson(QJsonDocument::Compact);
         DATA_BLOB input{DWORD(plain.size()),reinterpret_cast<BYTE*>(plain.data())},output{};
-        if(!CryptProtectData(&input,L"Stream Notify accounts",nullptr,nullptr,nullptr,CRYPTPROTECT_UI_FORBIDDEN,&output))return false;
+        if(!CryptProtectData(&input,L"OZK Notify accounts",nullptr,nullptr,nullptr,CRYPTPROTECT_UI_FORBIDDEN,&output))return false;
         SecureZeroMemory(plain.data(),SIZE_T(plain.size()));
         const QByteArray encrypted(reinterpret_cast<const char*>(output.pbData),int(output.cbData));LocalFree(output.pbData);
         if(!QDir().mkpath(QFileInfo(path_).absolutePath()))return false;

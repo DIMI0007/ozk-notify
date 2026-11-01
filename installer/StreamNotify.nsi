@@ -8,7 +8,7 @@ Unicode true
 !ifndef QT_WEBSOCKETS_DLL
 !error "Pass /DQT_WEBSOCKETS_DLL=path_to_matching_Qt6WebSockets.dll"
 !endif
-Name "Stream Notify 1.0"
+Name "OZK Notify 1.0"
 OutFile "StreamNotify-1.0.0-Windows-x64-Setup.exe"
 InstallDir "$PROGRAMFILES64\obs-studio"
 RequestExecutionLevel admin
@@ -24,7 +24,7 @@ ShowUninstDetails show
 !insertmacro MUI_LANGUAGE "Russian"
 !insertmacro MUI_LANGUAGE "English"
 
-Section "Stream Notify" SecPlugin
+Section "OZK Notify" SecPlugin
   SetRegView 64
   IfFileExists "$INSTDIR\bin\64bit\obs64.exe" found no_obs
   no_obs:
@@ -43,7 +43,7 @@ Section "Stream Notify" SecPlugin
   websocket_present:
 
   WriteUninstaller "$INSTDIR\StreamNotify-Uninstall.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamNotify" "DisplayName" "Stream Notify 1.0 for OBS"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamNotify" "DisplayName" "OZK Notify 1.0 for OBS"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamNotify" "UninstallString" '"$INSTDIR\StreamNotify-Uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamNotify" "InstallLocation" "$INSTDIR"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamNotify" "NoModify" 1

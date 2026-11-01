@@ -96,7 +96,7 @@ protected:
             QPainterPath bubble;bubble.moveTo(7,6);bubble.lineTo(26,6);bubble.lineTo(26,21);
             bubble.lineTo(20,27);bubble.lineTo(14,27);bubble.lineTo(10,30);bubble.lineTo(10,25);bubble.lineTo(7,25);bubble.closeSubpath();
             p.drawPath(bubble);p.setPen(QPen(color,2));p.drawLine(15,11,15,19);p.drawLine(21,11,21,19);
-        } else if((name_=="Stream Notify" || name_=="Waiting")) {
+        } else if((name_=="OZK Notify" || name_=="Waiting")) {
             const QColor broadcast=name_=="Waiting"?QColor("#ffda49"):QColor("#00df8c");
             p.setBrush(broadcast);p.drawEllipse(QPointF(16,16),3,3);
             p.setBrush(Qt::NoBrush);p.setPen(QPen(broadcast,2.5,Qt::SolidLine,Qt::RoundCap));

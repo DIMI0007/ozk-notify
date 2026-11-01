@@ -37,7 +37,7 @@ QByteArray protect(const QString& value)
     if (input.isEmpty()) return {};
     DATA_BLOB src {DWORD(input.size()), reinterpret_cast<BYTE*>(const_cast<char*>(input.constData()))};
     DATA_BLOB dest {};
-    if (!CryptProtectData(&src, L"Stream Notify 1.0", nullptr, nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &dest)) return {};
+    if (!CryptProtectData(&src, L"OZK Notify 1.0", nullptr, nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &dest)) return {};
     QByteArray result(reinterpret_cast<const char*>(dest.pbData), int(dest.cbData));
     LocalFree(dest.pbData);
     return result.toBase64();

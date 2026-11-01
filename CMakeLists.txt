@@ -10,7 +10,7 @@ include(defaults)
 include(helpers)
 
 if(NOT WIN32)
-  message(FATAL_ERROR "This Stream Notify test branch supports Windows x64 only")
+  message(FATAL_ERROR "This OZK Notify test branch supports Windows x64 only")
 endif()
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Requires Windows x64")

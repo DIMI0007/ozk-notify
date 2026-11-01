@@ -34,7 +34,7 @@ extern "C" __declspec(dllexport) bool stream_notify_telemetry_v2(uint64_t* sent,
 }
 
 OBS_DECLARE_MODULE()
-OBS_MODULE_AUTHOR("Stream Notify Contributors")
+OBS_MODULE_AUTHOR("DMITRII")
 
 namespace {
 QPointer<StreamDock> g_panel;
@@ -55,9 +55,9 @@ void installDock()
     auto* window = static_cast<QMainWindow*>(obs_frontend_get_main_window());
     if(!window) return;
     auto* panel = new StreamDock;
-    if (!obs_frontend_add_dock_by_id("stream-notify-dock", "Stream Notify", panel)) {
+    if (!obs_frontend_add_dock_by_id("stream-notify-dock", "OZK Notify", panel)) {
         delete panel;
-        blog(LOG_ERROR,"[Stream Notify] Could not register dock");
+        blog(LOG_ERROR,"[OZK Notify] Could not register dock");
         return;
     }
     g_panel = panel;
@@ -101,7 +101,7 @@ void onFrontend(enum obs_frontend_event event, void*)
 }
 }
 
-MODULE_EXPORT const char* obs_module_name(void) {return "Stream Notify";}
+MODULE_EXPORT const char* obs_module_name(void) {return "OZK Notify";}
 MODULE_EXPORT const char* obs_module_description(void)
 {return "Telegram and Discord stream start notifications with a native OBS dock";}
 
@@ -116,12 +116,12 @@ bool obs_module_load(void)
     }
     if(!QSslSocket::supportsSsl() && QSslSocket::availableBackends().contains("schannel"))
         QSslSocket::setActiveBackend("schannel");
-    blog(LOG_INFO,"[Stream Notify] HTTPS support: %s; TLS backend: %s",
+    blog(LOG_INFO,"[OZK Notify] HTTPS support: %s; TLS backend: %s",
         QSslSocket::supportsSsl()?"available":"unavailable",
         QSslSocket::activeBackend().toUtf8().constData());
     obs_frontend_add_event_callback(onFrontend, nullptr);
     g_registered = true;
-    blog(LOG_INFO, "[Stream Notify] Version %s (%s) loaded; waiting for frontend initialization",STREAM_NOTIFY_VERSION,STREAM_NOTIFY_BUILD);
+    blog(LOG_INFO, "[OZK Notify] Version %s (%s) loaded; waiting for frontend initialization",STREAM_NOTIFY_VERSION,STREAM_NOTIFY_BUILD);
     return true;
 }
 void obs_module_unload(void)

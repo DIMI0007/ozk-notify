@@ -1,4 +1,4 @@
-Stream Notify — current validation status
+OZK Notify — current validation status
 
 2026-10-26 USER CONFIRMED: restored pre-fix DLL (SHA256 DF6C35BC5B08948FFEA767AEB58F8FB895079856E1033DFA11497BCBA35D8C37) loaded in OBS; real stream-start announcement reached both Telegram and Discord, with a Discord screenshot. This is validation of the restored previous build, not of the new fixes. The earlier intermittent Discord failure has not been reproduced or assigned a confirmed root cause.
 
@@ -7,7 +7,7 @@ Stream Notify — current validation status
 2026-10-26 USER CONFIRMED: new version 1.0.1 loaded in OBS (version visible in screenshot). DonationAlerts browser consent for app 22338 completed; the plugin displayed Connected, which is only set after a successful Centrifugo subscription acknowledgement. DonatePay displayed API connected / 30-second polling. No keys are included in this record.
 PASS: new Windows CI run 40237374529 (d94fb0d0dda62bea0a5463f9f43e4b27228702fa) compiled the plugin, passed eight CTest checks, exercised the Qt dock at four sizes/scales, and verified packaged HTTPS. Tests cover loopback Host/Origin/state validation and persistent donation journal recovery on Windows.
 PENDING: new real donations from both providers, destination delivery, no-duplicate replay, and live network/restart recovery. No manual test notification is treated as proof of ingestion.
-2026-10-26 USER CONFIRMED: replaying a prior real DonationAlerts payment in the provider dashboard produced an event received by Stream Notify 1.0.1 and delivered to both Telegram and Discord; local ledger states were sent/sent. Repeating that same alert again played the OBS widget but produced no new messenger notifications. This confirms receipt, delivery and duplicate-ID suppression for a provider replay; it is not evidence of a newly paid donation, live reconnect or OBS-restart behavior. Existing user thresholds 49/99/199 RUB were preserved.
+2026-10-26 USER CONFIRMED: replaying a prior real DonationAlerts payment in the provider dashboard produced an event received by OZK Notify 1.0.1 and delivered to both Telegram and Discord; local ledger states were sent/sent. Repeating that same alert again played the OBS widget but produced no new messenger notifications. This confirms receipt, delivery and duplicate-ID suppression for a provider replay; it is not evidence of a newly paid donation, live reconnect or OBS-restart behavior. Existing user thresholds 49/99/199 RUB were preserved.
 
 PASS: Windows x64 build for OBS 33.0.0 / Qt 6.11.1.
 PASS: C++ donation threshold and fixed-rate conversion tests.

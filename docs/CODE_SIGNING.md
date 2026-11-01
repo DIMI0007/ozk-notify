@@ -12,7 +12,7 @@ The project owner [DIMI0007](https://github.com/DIMI0007) is the maintainer, com
 
 ## Build provenance
 
-Only artifacts built from a reviewed commit in [this repository](https://github.com/DIMI0007/stream-notify) by the project's GitHub Actions workflow are candidates for signing. Source revision, build run and hashes must identify each release. Private settings, user logs and real credentials must never be included in a release or sent to the signing service.
+Only artifacts built from a reviewed commit in [this repository](https://github.com/DIMI0007/ozk-notify) by the project's GitHub Actions workflow are candidates for signing. Source revision, build run and hashes must identify each release. Private settings, user logs and real credentials must never be included in a release or sent to the signing service.
 
 Before distributing a signed package, verify the Authenticode signature of every executable and DLL in that package. Third-party libraries must retain their original publisher identity or use a signing arrangement approved by the signing provider; an installer signature alone does not sign the DLLs inside it.
 

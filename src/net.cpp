@@ -19,7 +19,7 @@ void Sender::send(Channel channel, const Snapshot& s, const QString& message, Co
 {
     sn::CpuScope snCpuScope;
     if(!QSslSocket::supportsSsl()) {
-        done({Outcome::Failed,"HTTPS unavailable: Qt TLS module missing. Reinstall the complete Stream Notify folder.",0});
+        done({Outcome::Failed,"HTTPS unavailable: Qt TLS module missing. Reinstall the complete OZK Notify folder.",0});
         return;
     }
     tasks_.erase(std::remove_if(tasks_.begin(),tasks_.end(),[](const auto& item){ sn::CpuScope snCallbackScope; return item.expired();}),tasks_.end());

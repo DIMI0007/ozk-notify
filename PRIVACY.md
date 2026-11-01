@@ -1,6 +1,6 @@
 # Privacy policy
 
-Stream Notify runs locally as an OBS Studio plugin. The project does not operate a relay server, analytics service, or account database for plugin users.
+OZK Notify runs locally as an OBS Studio plugin. The project does not operate a relay server, analytics service, or account database for plugin users.
 
 ## Connections requested by the user
 
@@ -22,4 +22,4 @@ Settings, delivery history, donation identifiers and delivery status are stored 
 
 ## Contact and diagnostics
 
-The public [GitHub issue tracker](https://github.com/DIMI0007/stream-notify/issues) can be used for support. Do not post bot tokens, webhook URLs, OAuth tokens, widget tokens, private messages or unredacted configuration files. Logs and screenshots supplied by users may contain private data and should be reviewed before sharing.
+The public [GitHub issue tracker](https://github.com/DIMI0007/ozk-notify/issues) can be used for support. Do not post bot tokens, webhook URLs, OAuth tokens, widget tokens, private messages or unredacted configuration files. Logs and screenshots supplied by users may contain private data and should be reviewed before sharing.

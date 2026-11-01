@@ -1,4 +1,4 @@
-# Stream Notify — уведомления о донатах
+# OZK Notify — уведомления о донатах
 
 Донатные сообщения работают как **повторные анонсы активного эфира**. Поддержка зрителя и его сообщение дают повод напомнить о трансляции, показать происходящую на ней активность и снова пригласить аудиторию.
 
@@ -23,12 +23,12 @@
 
 <table>
 <tr>
-<td align="center" valign="top"><b>Сервисы</b><br><a href="docs/screenshots/donations-services.png"><img src="docs/screenshots/donations-services.png" width="300" alt="Сервисы — Stream Notify"></a><br>DonationAlerts и DonatePay, ключи и проверка подключения.</td>
-<td align="center" valign="top"><b>Отправка</b><br><a href="docs/screenshots/donations-delivery.png"><img src="docs/screenshots/donations-delivery.png" width="300" alt="Отправка — Stream Notify"></a><br>Кому отправлять и учитывать ли только активный эфир.</td>
+<td align="center" valign="top"><b>Сервисы</b><br><a href="docs/screenshots/donations-services.png"><img src="docs/screenshots/donations-services.png" width="300" alt="Сервисы — OZK Notify"></a><br>DonationAlerts и DonatePay, ключи и проверка подключения.</td>
+<td align="center" valign="top"><b>Отправка</b><br><a href="docs/screenshots/donations-delivery.png"><img src="docs/screenshots/donations-delivery.png" width="300" alt="Отправка — OZK Notify"></a><br>Кому отправлять и учитывать ли только активный эфир.</td>
 </tr>
 <tr>
-<td align="center" valign="top"><b>Суммы</b><br><a href="docs/screenshots/donations-amounts.png"><img src="docs/screenshots/donations-amounts.png" width="300" alt="Суммы — Stream Notify"></a><br>Три рублёвых порога и справочник курсов.</td>
-<td align="center" valign="top"><b>Текст</b><br><a href="docs/screenshots/donations-text.png"><img src="docs/screenshots/donations-text.png" width="300" alt="Текст — Stream Notify"></a><br>Шаблоны, предпросмотр, ручной тест и журнал.</td>
+<td align="center" valign="top"><b>Суммы</b><br><a href="docs/screenshots/donations-amounts.png"><img src="docs/screenshots/donations-amounts.png" width="300" alt="Суммы — OZK Notify"></a><br>Три рублёвых порога и справочник курсов.</td>
+<td align="center" valign="top"><b>Текст</b><br><a href="docs/screenshots/donations-text.png"><img src="docs/screenshots/donations-text.png" width="300" alt="Текст — OZK Notify"></a><br>Шаблоны, предпросмотр, ручной тест и журнал.</td>
 </tr>
 </table>
 

@@ -67,7 +67,7 @@ private:
         }
         // Close the listener immediately, leaving this response socket to drain.
         sockets_.remove(socket);timeout_.stop();server_.close();state_.clear();
-        respond(socket,200,"<!doctype html><meta charset=utf-8><title>Stream Notify</title><p>Authorization received. Return to OBS.</p>");
+        respond(socket,200,"<!doctype html><meta charset=utf-8><title>OZK Notify</title><p>Authorization received. Return to OBS.</p>");
         if(!error.isEmpty())Q_EMIT failed("Authorization declined or cancelled");
         else Q_EMIT received(parameters);
     }
@@ -112,7 +112,7 @@ private:
         const QUrlQuery query(target);
         if(!implicit_||query.hasQueryItem("error")){accept(socket,query);return;}
         const QByteArray nonce=state_.toUtf8();
-        const QByteArray html="<!doctype html><meta charset=utf-8><title>Stream Notify</title><p id=result>Returning authorization to OBS...</p><script nonce='"+nonce+"'>"
+        const QByteArray html="<!doctype html><meta charset=utf-8><title>OZK Notify</title><p id=result>Returning authorization to OBS...</p><script nonce='"+nonce+"'>"
             "const p=new URLSearchParams(location.hash.slice(1));history.replaceState(null,'',location.pathname);"
             "fetch('/oauth-complete/"+nonce+"',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:p.toString()})"
             ".then(r=>{document.getElementById('result').textContent=r.ok?'Return to OBS.':'Authorization failed. Return to OBS and try again.'})"
