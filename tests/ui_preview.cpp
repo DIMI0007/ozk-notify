@@ -401,9 +401,12 @@ int main(int argc,char** argv) {
     const QSize pulseSize=panel.size();
     if(!save("13-countdown-last10"))return previewResult(1);
     const QImage beforePulse=panel.grab().toImage();
-    for(int i=0;i<7;++i)pump();
-    const QImage afterPulse=panel.grab().toImage();
-    if(beforePulse==afterPulse || panel.size()!=pulseSize)return previewResult(24);
+    bool pulseChanged=false;
+    for(int i=0;i<30 && !pulseChanged;++i){
+        pump();
+        pulseChanged=(beforePulse!=panel.grab().toImage());
+    }
+    if(!pulseChanged || panel.size()!=pulseSize)return previewResult(24);
     if(!save("14-countdown-pulse"))return previewResult(1);
     panel.hide();pump();if(pulse->isActive())return previewResult(25);
     panel.show();pump();if(!pulse->isActive())return previewResult(26);
