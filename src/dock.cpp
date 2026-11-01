@@ -478,7 +478,7 @@ void StreamDock::rebuildNow()
     credit->setObjectName("Credit");credit->setTextFormat(Qt::RichText);
     credit->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::LinksAccessibleByKeyboard);
     credit->setOpenExternalLinks(true);credit->setAlignment(Qt::AlignCenter);
-    credit->setFixedHeight(22);credit->setStyleSheet("color:#9badc2;background:#0b1723;border-top:1px solid #263b50;font-size:10px;");
+    credit->setFixedHeight(20);credit->setStyleSheet("color:#9badc2;background:#0b1723;border-top:1px solid #263b50;font-size:10px;");
     credit->setToolTip("Stream Notify · OTMOPOZOK");
     footer->addWidget(credit);
     root_->addWidget(footerWidget);
@@ -1555,6 +1555,7 @@ QWidget* StreamDock::buildResult()
     const bool dcSent = discord_.status == Outcome::Sent;
     const bool allOk = (!session_.telegram || tgSent) && (!session_.discord || dcSent);
     const bool partial = (tgSent || dcSent) && !allOk;
+    const bool unconfirmed = telegram_.status == Outcome::Unknown || discord_.status == Outcome::Unknown;
     auto* body = new QWidget;
     body->setObjectName("PageBody");
     auto* v = column(body, 16, 13);
@@ -1562,7 +1563,9 @@ QWidget* StreamDock::buildResult()
     auto* symbol=new ResultEmblem(allOk?0:partial?1:2);
     v->addWidget(symbol,0,Qt::AlignHCenter);
     auto* title = label(allOk ? uiText("Уведомления отправлены", "Notifications sent") :
-       partial ? uiText("Отправлено частично", "Partially delivered") : uiText("Не удалось отправить", "Delivery failed"));
+       partial ? uiText("Отправлено частично", "Partially delivered") :
+       unconfirmed ? uiText("Доставка не подтверждена", "Delivery unconfirmed") :
+       uiText("Не удалось отправить", "Delivery failed"));
     title->setAlignment(Qt::AlignHCenter);
     QFont font = title->font(); font.setPointSize(15); font.setBold(true); title->setFont(font);
     title->setStyleSheet("color:#e7fff4;font-size:17px;font-weight:700;");
@@ -1889,6 +1892,8 @@ void StreamDock::testChannel(Channel channel)
     testSender_.send(channel,snap,message,[this,channel](Delivery d) {
         if(shuttingDown_) return;
         const QString text = d.status == Outcome::Sent ? uiText("✓ Тест отправлен", "✓ Test sent") :
+         d.status == Outcome::Unknown ? uiText("⚠ Доставка теста не подтверждена. Проверьте сервис перед повтором: ",
+                                              "⚠ Test delivery unconfirmed. Check the service before retrying: ") + d.detail :
          uiText("⚠ Ошибка теста: ", "⚠ Test error: ") + d.detail;
         if(channel == Channel::Telegram) {testingTelegram_=false;transientTelegram_=text;}
         else {testingDiscord_=false;transientDiscord_=text;}
