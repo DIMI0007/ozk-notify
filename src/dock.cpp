@@ -67,7 +67,7 @@ QLabel#Good { color: #07df91; font-weight: 700; }
 QLabel#Bad { color: #ff8484; font-weight: 700; }
 QLabel#Count { color: #59dfff; font-weight: 750; font-size: 57px; }
 QPushButton { color: #e1ebff; background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #202a3b,stop:1 #141d2b); border: 1px solid #39465d; border-radius: 8px; min-height: 20px; padding: 3px 7px; }
-QPushButton#ManualMessageShortcut,QPushButton#SettingsShortcut { border-radius:8px;padding:0; }
+QPushButton#BackShortcut,QPushButton#ManualMessageShortcut,QPushButton#SettingsShortcut { border-radius:8px;padding:0; }
 QPushButton:hover { background:#26344d;border-color:#6476a0; }
 QPushButton:focus { border-color:#8a79ff; }
 QPushButton:pressed { background:#111b30; }
@@ -430,6 +430,17 @@ void StreamDock::rebuildNow()
     t->setAccessibleName("OZK Notify");
     title_ = t;
     h->addWidget(t, 1);
+    if(page_==Page::Connections||page_==Page::Message||page_==Page::Interface||page_==Page::Donations) {
+        auto* backButton=btn(QString());
+        backButton->setObjectName("BackShortcut");
+        backButton->setIcon(streamNavIcon("back"));
+        backButton->setIconSize(QSize(19,19));
+        backButton->setFixedSize(30,28);
+        backButton->setToolTip(uiText("Назад на основное", "Back to Home"));
+        backButton->setAccessibleName(backButton->toolTip());
+        connect(backButton,&QPushButton::clicked,this,[this]{showPage(Page::Home);});
+        h->addWidget(backButton);
+    }
     auto* manualButton=btn(QString());
     manualButton->setObjectName("ManualMessageShortcut");
     manualButton->setIcon(streamNavIcon("send",page_==Page::ManualMessage));

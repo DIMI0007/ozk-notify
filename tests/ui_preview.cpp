@@ -265,8 +265,14 @@ int main(int argc,char** argv) {
         foundDonations|=button->text()==QString::fromUtf8("Донаты");
     }
     if(!foundConnect||!foundMessage||!foundInterface||!foundDonations)return previewResult(55);
-    settingsShortcut=panel.findChild<QPushButton*>("SettingsShortcut");
-    settingsShortcut->click();pump();
+    auto* headerBack=panel.findChild<QPushButton*>("BackShortcut");
+    headerManual=panel.findChild<QPushButton*>("ManualMessageShortcut");
+    if(!headerBack||!headerManual||headerBack->size()!=headerManual->size()||
+       headerBack->iconSize()!=headerManual->iconSize()||headerBack->icon().isNull()||
+       headerBack->x()>=headerManual->x()||headerBack->y()!=headerManual->y())return previewResult(79);
+    if(!save("02-settings-back"))return previewResult(80);
+    headerBack->click();pump();
+    if(panel.findChild<QPushButton*>("BackShortcut")!=nullptr)return previewResult(81);
     if(panel.findChild<QPushButton*>("SettingsShortcut")==nullptr)return previewResult(56);
     const QSize homeSize=panel.size();
     auto* manualShortcut=panel.findChild<QPushButton*>("ManualMessageShortcut");

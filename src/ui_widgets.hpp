@@ -126,7 +126,11 @@ inline QIcon streamNavIcon(const QString& kind,bool active=false) {
     QPainter p(&image);p.setRenderHint(QPainter::Antialiasing);p.scale(2,2);
     const QColor color=active?QColor("#f1f3ff"):QColor("#aebde3");
     p.setPen(QPen(color,1.7,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));p.setBrush(Qt::NoBrush);
-    if(kind=="home") {
+    if(kind=="back") {
+        p.drawLine(QPointF(19,12),QPointF(5,12));
+        p.drawLine(QPointF(5,12),QPointF(11,6));
+        p.drawLine(QPointF(5,12),QPointF(11,18));
+    } else if(kind=="home") {
         QPainterPath path;path.moveTo(2,11);path.lineTo(12,3);path.lineTo(22,11);
         path.lineTo(19,11);path.lineTo(19,21);path.lineTo(14,21);path.lineTo(14,15);
         path.lineTo(10,15);path.lineTo(10,21);path.lineTo(5,21);path.lineTo(5,11);path.closeSubpath();

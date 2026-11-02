@@ -5,7 +5,7 @@
 
 ## Скачать
 Откройте Actions → Build OZK Notify test DLL (Windows), выберите последнюю успешную сборку и скачайте:
-**OZKNotify-1.0.16-OBS33-Windows-x64**.
+**OZKNotify-1.0.17-OBS33-Windows-x64**.
 Артефакт OZKNotify-UI-Previews содержит снимки из тестового Qt-окна и не предназначен для установки.
 
 ## Установить или обновить
