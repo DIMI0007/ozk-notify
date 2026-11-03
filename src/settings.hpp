@@ -1,6 +1,7 @@
 #pragma once
 #include <QObject>
 #include <QTimer>
+#include <QThreadPool>
 #include <QString>
 #include <QStringList>
 #include <QMap>
@@ -68,6 +69,7 @@ class SettingsStore : public QObject {
     Q_OBJECT
 public:
     explicit SettingsStore(QObject* parent = nullptr);
+    ~SettingsStore() override;
     Settings current;
     bool load();
     bool save();
@@ -81,6 +83,8 @@ private:
     QString path_;
     QString error_;
     QTimer saveTimer_;
+    QThreadPool writer_;
+    void saveBackground();
 };
 
 bool validTelegram(const QString& token, const QString& chat);

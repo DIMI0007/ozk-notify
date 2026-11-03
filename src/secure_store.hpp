@@ -21,13 +21,14 @@ public:
         if(!file.exists()){if(ok)*ok=true;return {};}
         if(!file.open(QIODevice::ReadOnly)||file.size()>1048576)return {};
 #ifdef Q_OS_WIN
-        auto bytes=file.readAll();DATA_BLOB input{DWORD(bytes.size()),reinterpret_cast<BYTE*>(bytes.data())},output{};
+        auto bytes=file.readAll();if(cached_&&bytes==cachedBytes_){if(ok)*ok=true;return cachedObject_;}DATA_BLOB input{DWORD(bytes.size()),reinterpret_cast<BYTE*>(bytes.data())},output{};
         if(!CryptUnprotectData(&input,nullptr,nullptr,nullptr,nullptr,CRYPTPROTECT_UI_FORBIDDEN,&output))return {};
         const QByteArray plain(reinterpret_cast<const char*>(output.pbData),int(output.cbData));
         SecureZeroMemory(output.pbData,output.cbData);LocalFree(output.pbData);
         QJsonParseError error;const auto document=QJsonDocument::fromJson(plain,&error);
         if(error.error!=QJsonParseError::NoError||!document.isObject())return {};
-        if(ok)*ok=true;return document.object();
+        cachedBytes_=bytes;cachedObject_=document.object();cached_=true;
+        if(ok)*ok=true;return cachedObject_;
 #else
         return {};
 #endif
@@ -46,6 +47,7 @@ public:
 #endif
     }
 private:QString path_;
+    mutable QByteArray cachedBytes_;mutable QJsonObject cachedObject_;mutable bool cached_=false;
 };
 }
 

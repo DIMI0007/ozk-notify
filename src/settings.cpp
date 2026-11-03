@@ -1,3 +1,4 @@
+#include "ozk_performance.hpp"
 #include "settings.hpp"
 #include "resources.hpp"
 #include <obs-module.h>
@@ -73,9 +74,11 @@ bool acceptedResult(int seconds) { return seconds == 30 || seconds == 45 || seco
 
 SettingsStore::SettingsStore(QObject* parent) : QObject(parent), path_(configPath())
 {
+    ozkperf::install();
     saveTimer_.setSingleShot(true);
     saveTimer_.setInterval(900);
-    connect(&saveTimer_, &QTimer::timeout, this, &SettingsStore::save);
+    writer_.setMaxThreadCount(1);
+    connect(&saveTimer_, &QTimer::timeout, this, &SettingsStore::saveBackground);
 }
 
 bool SettingsStore::load()
@@ -158,23 +161,30 @@ bool SettingsStore::load()
     return true;
 }
 
-bool SettingsStore::save()
-{
+namespace {
+QByteArray cachedProtect(const QString& key,const QString& value){
+    thread_local QMap<QString,QPair<QString,QByteArray>> cache;
+    if(cache.contains(key)&&cache.value(key).first==value)return cache.value(key).second;
+    const auto encoded=protect(value);if(value.isEmpty()||!encoded.isEmpty())cache[key]=qMakePair(value,encoded);
+    return encoded;
+}
+QString writeSnapshot(const QString& path,const Settings& snapshot){ozkperf::Scope perf(Q_FUNC_INFO);    QString error_;
+
     sn::CpuScope snCpuScope;
-    if (path_.isEmpty()) { error_ = "OBS plugin config path unavailable"; Q_EMIT persisted(false); return false; }
-    if (!QDir().mkpath(QFileInfo(path_).absolutePath())) { error_ = "Cannot create settings folder"; Q_EMIT persisted(false); return false; }
-    const QByteArray t = protect(current.telegramToken);
-    const QByteArray d = protect(current.discordWebhook);
-    if ((!current.telegramToken.isEmpty() && t.isEmpty()) || (!current.discordWebhook.isEmpty() && d.isEmpty())) {
-        error_ = "Windows failed to encrypt secret"; Q_EMIT persisted(false); return false;
+    if (path.isEmpty()) { error_ = "OBS plugin config path unavailable"; return error_; }
+    if (!QDir().mkpath(QFileInfo(path).absolutePath())) { error_ = "Cannot create settings folder"; return error_; }
+    const QByteArray t = cachedProtect(path+"/telegram",snapshot.telegramToken);
+    const QByteArray d = cachedProtect(path+"/discord",snapshot.discordWebhook);
+    if ((!snapshot.telegramToken.isEmpty() && t.isEmpty()) || (!snapshot.discordWebhook.isEmpty() && d.isEmpty())) {
+        error_ = "Windows failed to encrypt secret"; return error_;
     }
-    const QByteArray da=protect(current.donations.daToken),dp=protect(current.donations.dpToken);
-    if((!current.donations.daToken.isEmpty()&&da.isEmpty()) ||
-       (!current.donations.dpToken.isEmpty()&&dp.isEmpty())) {
-        error_="Cannot encrypt donation tokens"; Q_EMIT persisted(false);return false;
+    const QByteArray da=cachedProtect(path+"/da",snapshot.donations.daToken),dp=cachedProtect(path+"/dp",snapshot.donations.dpToken);
+    if((!snapshot.donations.daToken.isEmpty()&&da.isEmpty()) ||
+       (!snapshot.donations.dpToken.isEmpty()&&dp.isEmpty())) {
+        error_="Cannot encrypt donation tokens"; Q_EMIT persisted(false);return error_;
     }
     QJsonObject donationObj;
-    const auto& ds=current.donations;
+    const auto& ds=snapshot.donations;
     donationObj["enabled"]=ds.enabled;
     donationObj["donation_alerts_enabled"]=ds.daEnabled;
     donationObj["donate_pay_enabled"]=ds.dpEnabled;
@@ -196,46 +206,55 @@ bool SettingsStore::save()
     QJsonObject j;
     j["donations"]=donationObj;
     j["schema_version"] = 1;
-    j["enabled"] = current.enabled;
-    j["telegram_enabled"] = current.telegramEnabled;
-    j["discord_enabled"] = current.discordEnabled;
-    j["discord_everyone"] = current.discordEveryone;
-    j["telegram_chat"] = current.telegramChat;
+    j["enabled"] = snapshot.enabled;
+    j["telegram_enabled"] = snapshot.telegramEnabled;
+    j["discord_enabled"] = snapshot.discordEnabled;
+    j["discord_everyone"] = snapshot.discordEveryone;
+    j["telegram_chat"] = snapshot.telegramChat;
     j["telegram_secret"] = QString::fromLatin1(t);
     j["discord_secret"] = QString::fromLatin1(d);
-    j["youtube_url"] = current.youtubeUrl;
-    j["twitch_url"] = current.twitchUrl;
-    j["kick_url"] = current.kickUrl;
-    j["message"] = current.message;
-    j["second_announcement_enabled"]=current.secondAnnouncementEnabled;
-    j["second_message"]=current.secondMessage;
+    j["youtube_url"] = snapshot.youtubeUrl;
+    j["twitch_url"] = snapshot.twitchUrl;
+    j["kick_url"] = snapshot.kickUrl;
+    j["message"] = snapshot.message;
+    j["second_announcement_enabled"]=snapshot.secondAnnouncementEnabled;
+    j["second_message"]=snapshot.secondMessage;
     QJsonObject journal;
-    for(auto it=current.deliveryJournal.cbegin();it!=current.deliveryJournal.cend();++it)journal[it.key()]=it.value();
+    for(auto it=snapshot.deliveryJournal.cbegin();it!=snapshot.deliveryJournal.cend();++it)journal[it.key()]=it.value();
     j["delivery_journal"]=journal;
-    j["send_delay"] = current.sendDelay;
-    j["result_seconds"] = current.resultSeconds;
-    j["locale"] = current.locale;
-    j["compact"] = current.compact;
-    j["show_status"] = current.showStatus;
-    j["last_telegram"] = current.lastTelegram;
-    j["last_discord"] = current.lastDiscord;
-    j["last_time"] = current.lastTime;
+    j["send_delay"] = snapshot.sendDelay;
+    j["result_seconds"] = snapshot.resultSeconds;
+    j["locale"] = snapshot.locale;
+    j["compact"] = snapshot.compact;
+    j["show_status"] = snapshot.showStatus;
+    j["last_telegram"] = snapshot.lastTelegram;
+    j["last_discord"] = snapshot.lastDiscord;
+    j["last_time"] = snapshot.lastTime;
     QJsonArray events;
-    for (const QString& e : current.events) events.append(e);
+    for (const QString& e : snapshot.events) events.append(e);
     j["events"] = events;
-    QSaveFile f(path_);
-    if (!f.open(QFile::WriteOnly)) { error_ = "Cannot open settings for writing"; Q_EMIT persisted(false); return false; }
+    QSaveFile f(path);
+    if (!f.open(QFile::WriteOnly)) { error_ = "Cannot open settings for writing"; return error_; }
     if (f.write(QJsonDocument(j).toJson()) < 0 || !f.commit()) {
-        error_ = "Cannot commit settings"; Q_EMIT persisted(false); return false;
+        error_ = "Cannot commit settings"; return error_;
     }
-    error_.clear();
-    Q_EMIT persisted(true);
-    return true;
+    return {};
+}
+}
+SettingsStore::~SettingsStore(){flush();writer_.waitForDone();}
+bool SettingsStore::save(){
+    writer_.waitForDone();error_=writeSnapshot(path_,current);Q_EMIT persisted(error_.isEmpty());return error_.isEmpty();
+}
+void SettingsStore::saveBackground(){
+    const auto snapshot=current;const auto path=path_;
+    writer_.start([this,path,snapshot]{const auto error=writeSnapshot(path,snapshot);
+        QMetaObject::invokeMethod(this,[this,error]{error_=error;Q_EMIT persisted(error.isEmpty());},Qt::QueuedConnection);
+    });
 }
 void SettingsStore::scheduleSave() {
     sn::CpuScope snCpuScope; saveTimer_.start(); }
 void SettingsStore::flush() {
-    sn::CpuScope snCpuScope; if (saveTimer_.isActive()) { saveTimer_.stop(); save(); } }
+    sn::CpuScope snCpuScope; if (saveTimer_.isActive()) { saveTimer_.stop(); save(); } writer_.waitForDone(); }
 void SettingsStore::addEvent(const QString& msg)
 {
     sn::CpuScope snCpuScope;
