@@ -8,9 +8,17 @@
 
 **OZK Notify — плагин уведомлений для OBS Studio:** отправляет анонсы трансляций Twitch, YouTube и Kick в Telegram и Discord, показывает состояние эфира и сообщения о донатах.
 
+## Как выглядит
+
+Снимки сделаны в тестовом интерфейсе. Поля входа пустые, реальные ключи и личные данные не показаны.
+
 | Ожидание эфира | Во время трансляции |
 | --- | --- |
 | ![Ожидание](docs/screenshots/home.png) | ![Трансляция](docs/screenshots/monitoring.png) |
+| Настройки связи с кнопкой «Назад» | Настройки текста анонса |
+| ![Настройки связи](docs/screenshots/connections.png) | ![Настройки сообщения](docs/screenshots/message.png) |
+| Настройки донатов | Ручное сообщение |
+| ![Настройки донатов](docs/screenshots/donations-services.png) | ![Ручное сообщение](docs/screenshots/manual-message.png) |
 
 [Узкая панель](docs/screenshots/home-narrow.png) · [English](docs/README_EN.md)
 
