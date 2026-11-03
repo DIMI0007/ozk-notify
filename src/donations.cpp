@@ -2,6 +2,7 @@
 #include "resources.hpp"
 #include "donation_logic.hpp"
 #include "donatepay_reply.hpp"
+#include "donation_bridge.hpp"
 #include <obs-module.h>
 #include <util/bmem.h>
 #include <QJsonDocument>
@@ -445,6 +446,9 @@ void DonationEngine::dpPoll() {
             dpReconnect();return;
         }
         const auto rows=response.rows;
+        // Publish before baseline/notification deduplication: Donations must also recover
+        // records already notified earlier, without sending Telegram/Discord again.
+        ozk_bridge::publishDP(dpSignature_,rows);
         dpBackoff_=0;
         if(!dpPrimed_){
             for(const auto& row:rows) if(row.isObject())dpBaseline_.insert(first(row.toObject(),{"id","transaction_id"}));
