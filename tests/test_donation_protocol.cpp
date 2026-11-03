@@ -1,6 +1,8 @@
 #include "../src/donations.hpp"
 #include "../src/donatepay_reply.hpp"
 #include <QCoreApplication>
+#include <QEventLoop>
+#include <QTimer>
 #include <QTemporaryDir>
 #include <QJsonDocument>
 #include <cstdlib>
@@ -47,6 +49,10 @@ int main(int argc,char** argv){
     require(store.save(),"Announcement delivery journal not saved");
     SettingsStore restored;require(restored.load()&&restored.current.deliveryJournal.value("main|youtube|id|telegram")=="sent",
                                    "Announcement delivery journal lost on restart");
+    store.current.message="background-save-fixture";store.scheduleSave();
+    QEventLoop wait;QTimer::singleShot(1200,&wait,&QEventLoop::quit);wait.exec();store.flush();
+    SettingsStore backgroundRestored;require(backgroundRestored.load()&&backgroundRestored.current.message=="background-save-fixture",
+        "Background settings snapshot lost or shutdown flush incomplete");
     store.current.donations.enabled=true;store.current.donations.onlyLive=false;
     store.current.donations.toTelegram=false;store.current.donations.toDiscord=false;
     Donation below=donation;below.id="below-threshold";below.amount=30;

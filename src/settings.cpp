@@ -77,7 +77,7 @@ SettingsStore::SettingsStore(QObject* parent) : QObject(parent), path_(configPat
     ozkperf::install();
     saveTimer_.setSingleShot(true);
     saveTimer_.setInterval(900);
-    writer_.setMaxThreadCount(1);
+    writer_.setMaxThreadCount(1);writer_.setExpiryTimeout(-1);
     connect(&saveTimer_, &QTimer::timeout, this, &SettingsStore::saveBackground);
 }
 
