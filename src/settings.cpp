@@ -181,7 +181,7 @@ QString writeSnapshot(const QString& path,const Settings& snapshot){ozkperf::Sco
     const QByteArray da=cachedProtect(path+"/da",snapshot.donations.daToken),dp=cachedProtect(path+"/dp",snapshot.donations.dpToken);
     if((!snapshot.donations.daToken.isEmpty()&&da.isEmpty()) ||
        (!snapshot.donations.dpToken.isEmpty()&&dp.isEmpty())) {
-        error_="Cannot encrypt donation tokens"; Q_EMIT persisted(false);return error_;
+        error_="Cannot encrypt donation tokens"; return error_;
     }
     QJsonObject donationObj;
     const auto& ds=snapshot.donations;
