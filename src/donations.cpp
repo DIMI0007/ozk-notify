@@ -221,7 +221,8 @@ DonationEngine::DonationEngine(SettingsStore* settings,QObject* parent):QObject(
     connect(&dpTimer_,&QTimer::timeout,this,&DonationEngine::dpPoll);
     dpBridgeHeartbeat_.setInterval(15000);
     connect(&dpBridgeHeartbeat_,&QTimer::timeout,this,[this]{
-        if(!closing_&&!dpSignature_.isEmpty())ozk_bridge::publishDPProvider(dpSignature_);
+        if(!closing_&&!dpSignature_.isEmpty())
+            ozk_bridge::publishDPProvider(dpSignature_,dpStatus_.startsWith("API connected"));
     });
     connect(&websocket_,&QWebSocket::connected,this,[this] { sn::CpuScope snCallbackScope; 
         if(closing_)return;
@@ -326,7 +327,8 @@ void DonationEngine::configure() {
         ozk_bridge::clearDPProvider(dpSignature_);
         dpSignature_=newDP;dpTimer_.stop();++dpEpoch_;dpBackoff_=0;dpPrimed_=false;dpBaseline_.clear();
         if(!newDP.isEmpty()){
-            ozk_bridge::publishDPProvider(newDP);
+            state(dpStatus_,"Connecting");
+            ozk_bridge::publishDPProvider(newDP,false);
             dpBridgeHeartbeat_.start();
             dpPoll();
         }else dpBridgeHeartbeat_.stop();
@@ -428,12 +430,12 @@ void DonationEngine::dpPoll() {
     sn::CpuScope snCpuScope;
     if(dpSignature_.isEmpty()||closing_)return;
     if(!dpBridgeHeartbeat_.isActive()){
-        ozk_bridge::publishDPProvider(dpSignature_);
+        ozk_bridge::publishDPProvider(dpSignature_,dpStatus_.startsWith("API connected"));
         dpBridgeHeartbeat_.start();
     }
     // EXPERIMENTAL / account-verification gated. DonatePay official API is login-gated.
     // A legacy GET endpoint and >=30s interval are used only with explicit opt-in.
-    state(dpStatus_,"Connecting");
+    if(!dpStatus_.startsWith("API connected"))state(dpStatus_,"Connecting");
     QUrl u("https://donatepay.ru/api/v1/transactions");
     QUrlQuery q;q.addQueryItem("access_token",dpSignature_);q.addQueryItem("limit","100");
     q.addQueryItem("type","donation");q.addQueryItem("status","success");
@@ -452,14 +454,18 @@ void DonationEngine::dpPoll() {
         if(!response.ok){
             state(dpStatus_,response.status);
             if(response.permanent){
-                dpTimer_.stop();dpBridgeHeartbeat_.stop();
-                ozk_bridge::clearDPProvider(dpSignature_);return;
+                // Recheck authorization slowly in the background. Keep this as the
+                // sole provider so Donations does not start a second poller.
+                ozk_bridge::publishDPProvider(dpSignature_,false);
+                dpTimer_.start(300000);return;
             }
             if(response.rateLimited){
                 bool valid=false;const double seconds=retryAfter.toDouble(&valid);
                 const int delay=valid&&std::isfinite(seconds)&&seconds>0?int(std::min(seconds,3600.0)*1000):60000;
+                ozk_bridge::publishDPProvider(dpSignature_,false);
                 dpTimer_.start(std::max(30000,delay));return;
             }
+            ozk_bridge::publishDPProvider(dpSignature_,false);
             dpReconnect();return;
         }
         const auto rows=response.rows;
@@ -467,6 +473,7 @@ void DonationEngine::dpPoll() {
         // records already notified earlier, without sending Telegram/Discord again.
         ozk_bridge::publishDP(dpSignature_,rows);
         dpBackoff_=0;
+        ozk_bridge::publishDPProvider(dpSignature_,true);
         if(!dpPrimed_){
             for(const auto& row:rows) if(row.isObject())dpBaseline_.insert(first(row.toObject(),{"id","transaction_id"}));
             dpPrimed_=true;state(dpStatus_,response.status);dpTimer_.start(30000);return;
@@ -488,6 +495,7 @@ void DonationEngine::dpReconnect(){
     if(dpSignature_.isEmpty()||closing_)return;
     dpBackoff_=std::min(dpBackoff_+1,7);
     const int ms=std::max(30000,std::min(120000,30000*(1<<std::min(dpBackoff_,2))));
+    state(dpStatus_,"Reconnecting");
     dpTimer_.start(ms);
 }
 void DonationEngine::onDonation(const Donation& d) {

@@ -1,0 +1,41 @@
+name: Build OZK Notify package only (Windows)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure OBS and plugin
+        run: cmake --preset windows-ci-x64
+      - name: Build Windows x64 DLL
+        run: cmake --build --preset windows-x64 --config RelWithDebInfo --parallel
+      - name: Stage OBS 33 plugin package
+        shell: pwsh
+        run: |
+          cmake --install build_x64 --config RelWithDebInfo --prefix package
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item docs/TEST_WINDOWS_RU.md package/INSTALL_RU.md
+          if (!(Test-Path package/stream-notify/bin/64bit/stream-notify.dll)) { throw "Plugin DLL missing" }
+          if (!(Test-Path package/stream-notify/data/qt-plugins/tls/qschannelbackend.dll)) { throw "TLS backend missing" }
+          $bin = 'package/stream-notify/bin/64bit'
+          foreach ($file in Get-ChildItem $bin -File) { Move-Item -LiteralPath $file.FullName -Destination 'package/stream-notify' -Force }
+          Remove-Item $bin
+          Remove-Item 'package/stream-notify/bin'
+          if (!(Test-Path package/stream-notify/stream-notify.dll)) { throw 'OBS 33 plugin layout missing' }
+          if (Test-Path package/stream-notify/bin) { throw 'Legacy plugin layout remains' }
+          Get-ChildItem package/stream-notify -Recurse -Filter *.dll | Get-FileHash | Format-Table -AutoSize | Out-File package/SHA256.txt
+          $spec = Get-Content buildspec.json -Raw | ConvertFrom-Json
+          $dlls = @(Get-ChildItem package/stream-notify -Recurse -Filter *.dll | ForEach-Object {
+            $signature = Get-AuthenticodeSignature -LiteralPath $_.FullName
+            [ordered]@{ file = $_.FullName.Substring((Resolve-Path package).Path.Length + 1); sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash; signature = [string]$signature.Status }
+          })
+          [ordered]@{ product='OZK Notify'; version=$spec.version; commit=$env:GITHUB_SHA; run=$env:GITHUB_RUN_ID; obs='33.0.0'; qt='6.11.1'; packageType='unsigned-build'; files=$dlls } | ConvertTo-Json -Depth 5 | Set-Content package/BUILD_INFO.json -Encoding utf8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OZKNotify-1.0.22-OBS33-Windows-x64
+          path: package/
+          if-no-files-found: error

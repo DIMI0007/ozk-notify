@@ -149,7 +149,10 @@ ConnectionView connectionView(const QString& state,bool ru) {
     if(state=="Not configured"||state=="API verification required")return {text("Не подключён","Not connected"),0};
     if(state=="Waiting for stream")return {text("Ожидает эфир","Waiting for stream"),2};
     if(state=="Waiting for browser authorization")return {text("Подтвердите вход","Confirm sign-in"),2};
-    if(state=="Connecting"||state=="Reconnecting"||state=="Verifying authorization")return {text("Подключаем…","Connecting…"),2};
+    if(state=="Connecting"||state=="Verifying authorization")return {text("Проверяем…","Checking…"),2};
+    if(state=="Reconnecting")return {text("Повторяем автоматически","Retrying automatically"),2};
+    if(state=="Network error"||state.startsWith("HTTP ")||state=="Unrecognized API response"||state=="DonatePay API error")
+        return {text("Повторяем автоматически","Retrying automatically"),2};
     if(state=="Rate limited")return {text("Подождите немного","Please wait"),2};
     if(state=="Authorization cancelled or expired")return {text("Вход не завершён","Sign-in incomplete"),2};
     if(state.contains("DonatePay")&&(state.contains("401")||state.contains("key")))return {text("Проверьте ключ","Check your key"),3};
