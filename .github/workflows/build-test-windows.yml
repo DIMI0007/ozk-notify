@@ -1,7 +1,7 @@
 name: Build OZK Notify test DLL (Windows)
 on:
   push:
-    branches: [main, "codex/release-final", "codex/unify-header", "codex/donatepay-shared-poll"]
+    branches: [main, "codex/release-final", "codex/unify-header"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -89,7 +89,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
-          name: OZKNotify-1.0.19-OBS33-Windows-x64
+          name: OZKNotify-1.0.20-OBS33-Windows-x64
           path: package/
           if-no-files-found: error
 
