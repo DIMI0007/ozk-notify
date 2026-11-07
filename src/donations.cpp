@@ -427,6 +427,10 @@ void DonationEngine::daReconnect() {
 void DonationEngine::dpPoll() {
     sn::CpuScope snCpuScope;
     if(dpSignature_.isEmpty()||closing_)return;
+    if(!dpBridgeHeartbeat_.isActive()){
+        ozk_bridge::publishDPProvider(dpSignature_);
+        dpBridgeHeartbeat_.start();
+    }
     // EXPERIMENTAL / account-verification gated. DonatePay official API is login-gated.
     // A legacy GET endpoint and >=30s interval are used only with explicit opt-in.
     state(dpStatus_,"Connecting");
