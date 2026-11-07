@@ -1,5 +1,7 @@
 name: Build OZK Notify package only (Windows)
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
