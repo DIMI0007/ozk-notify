@@ -1,7 +1,7 @@
 name: Build OZK Notify test DLL (Windows)
 on:
   push:
-    branches: [main, "codex/release-final", "codex/unify-header"]
+    branches: [main, "codex/release-final", "codex/unify-header", "codex/donatepay-shared-poll"]
   workflow_dispatch:
 permissions:
   contents: read

@@ -219,6 +219,10 @@ DonationEngine::DonationEngine(SettingsStore* settings,QObject* parent):QObject(
     connect(&daRetry_,&QTimer::timeout,this,&DonationEngine::daConnect);
     dpTimer_.setSingleShot(true);
     connect(&dpTimer_,&QTimer::timeout,this,&DonationEngine::dpPoll);
+    dpBridgeHeartbeat_.setInterval(15000);
+    connect(&dpBridgeHeartbeat_,&QTimer::timeout,this,[this]{
+        if(!closing_&&!dpSignature_.isEmpty())ozk_bridge::publishDPProvider(dpSignature_);
+    });
     connect(&websocket_,&QWebSocket::connected,this,[this] { sn::CpuScope snCallbackScope; 
         if(closing_)return;
         QJsonObject hello{{"id",1},{"params",QJsonObject{{"token",daSocketToken_}}}};
@@ -279,7 +283,8 @@ void DonationEngine::state(QString& dest,const QString& value) {
         store_->addEvent(QString(&dest==&daStatus_?"DONATIONALERTS ":"DONATEPAY ")+value);Q_EMIT updated();}}
 void DonationEngine::clearConnections() {
     sn::CpuScope snCpuScope;
-    ++daEpoch_;++dpEpoch_;daRetry_.stop();dpTimer_.stop();
+    ++daEpoch_;++dpEpoch_;daRetry_.stop();dpTimer_.stop();dpBridgeHeartbeat_.stop();
+    ozk_bridge::clearDPProvider(dpSignature_);
     resettingSocket_=true;websocket_.abort();resettingSocket_=false;
     sender_.abortAll();
 }
@@ -318,8 +323,13 @@ void DonationEngine::configure() {
         if(!newDA.isEmpty())daConnect();
     }
     if(newDP!=dpSignature_) {
+        ozk_bridge::clearDPProvider(dpSignature_);
         dpSignature_=newDP;dpTimer_.stop();++dpEpoch_;dpBackoff_=0;dpPrimed_=false;dpBaseline_.clear();
-        if(!newDP.isEmpty())dpPoll();
+        if(!newDP.isEmpty()){
+            ozk_bridge::publishDPProvider(newDP);
+            dpBridgeHeartbeat_.start();
+            dpPoll();
+        }else dpBridgeHeartbeat_.stop();
     }
     // Inactive signatures may stay empty across setting changes. Refresh their
     // reason every time, even when no connection must be restarted.
@@ -437,7 +447,10 @@ void DonationEngine::dpPoll() {
         const auto response=sn::parseDonatePayReply(status,bytes);
         if(!response.ok){
             state(dpStatus_,response.status);
-            if(response.permanent){dpTimer_.stop();return;}
+            if(response.permanent){
+                dpTimer_.stop();dpBridgeHeartbeat_.stop();
+                ozk_bridge::clearDPProvider(dpSignature_);return;
+            }
             if(response.rateLimited){
                 bool valid=false;const double seconds=retryAfter.toDouble(&valid);
                 const int delay=valid&&std::isfinite(seconds)&&seconds>0?int(std::min(seconds,3600.0)*1000):60000;

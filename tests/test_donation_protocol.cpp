@@ -1,5 +1,6 @@
 #include "../src/donations.hpp"
 #include "../src/donatepay_reply.hpp"
+#include "../src/donation_bridge.hpp"
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QTimer>
@@ -12,6 +13,11 @@ static void require(bool ok,const char* message){if(!ok){std::cerr<<message<<'\n
 struct DockPreview {static void receive(DonationEngine& engine,const Donation& donation){engine.onDonation(donation);}};
 int main(int argc,char** argv){
     QCoreApplication app(argc,argv);
+    ozk_bridge::publishDPProvider("notify-test-account");
+    require(ozk_bridge::hasDPProvider("notify-test-account"),"DonatePay provider lease missing");
+    require(!ozk_bridge::hasDPProvider("different-account"),"Provider lease crossed accounts");
+    ozk_bridge::clearDPProvider("notify-test-account");
+    require(!ozk_bridge::hasDPProvider("notify-test-account"),"Provider lease survived shutdown");
     const auto rejected=sn::parseDonatePayReply(200,R"({"status":"error","message":"Incorrect token"})");
     require(!rejected.ok&&rejected.permanent&&rejected.status=="Incorrect DonatePay API key","HTTP-200 token rejection misclassified");
     require(sn::parseDonatePayReply(429,"{}").rateLimited,"HTTP 429 not rate limited");
