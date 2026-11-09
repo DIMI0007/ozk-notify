@@ -23,7 +23,10 @@ int main(int argc,char** argv){
     require(sn::parseDonatePayReply(429,"{}").rateLimited,"HTTP 429 not rate limited");
     require(sn::parseDonatePayReply(200,R"({"status":429})").rateLimited,"Envelope 429 not rate limited");
     for(int code:{401,403})require(sn::parseDonatePayReply(code,"{}").permanent,"Unauthorized request retried");
-    require(sn::parseDonatePayReply(200,"<html>not API</html>").permanent,"HTML response accepted");
+    const auto html=sn::parseDonatePayReply(200,"<html>not API</html>");
+    require(!html.ok&&!html.permanent,"Temporary proxy response must recover");
+    const auto temporary=sn::parseDonatePayReply(200,R"({"status":"error","message":"Temporary error"})");
+    require(!temporary.ok&&!temporary.permanent,"Temporary API error must recover");
     const auto valid=sn::parseDonatePayReply(200,R"({"status":"success","data":[{"id":123,"what":"Fixture","sum":"112.21","currency":"RUB","type":"donation","status":"success","comment":"hello"}]})");
     require(valid.ok&&valid.rows.size()==1,"Official DonatePay transaction envelope rejected");
     const auto donation=parseDonatePay(valid.rows[0].toObject());
