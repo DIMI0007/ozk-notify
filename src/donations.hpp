@@ -87,11 +87,11 @@ private:
     OAuthLoopback daLogin_;
     QPointer<QNetworkReply> daLoginReply_;
     quint64 daLoginEpoch_=0;
-    QTimer daRetry_, dpTimer_, dpBridgeHeartbeat_;
+    QTimer daRetry_, dpTimer_, dpBridgeHeartbeat_, daBridgeHeartbeat_;
     DonationLedger ledger_;
     sn::DonationSession sessionStats_;
     bool live_ = false, closing_ = false, dpPrimed_ = false;
-    int daBackoff_ = 0, dpBackoff_ = 0;
+    int daBackoff_ = 0, dpBackoff_ = 0, dpRateLimitCount_ = 0;
     quint64 daEpoch_ = 0, dpEpoch_ = 0;
     QString daStatus_ = "Disabled", dpStatus_ = "Disabled";
     QString daSignature_, dpSignature_;

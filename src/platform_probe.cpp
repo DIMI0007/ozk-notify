@@ -79,10 +79,14 @@ PlatformProbe::PlatformProbe(QObject* parent):QObject(parent),googleLogin_(this)
     loadAccounts();
 }
 void PlatformProbe::loadAccounts(){
+    const auto oldYouTube=youtubeToken_.value("access_token");
+    const auto oldTwitch=twitchToken_.value("access_token");
     bool ok=false;auto own=ownYouTube_.load(&ok);auto chat=chatYouTube_.load(&ok);
     youtubeFromChat_=!available(own)&&available(chat);youtubeToken_=youtubeFromChat_?chat:own;
     own=ownTwitch_.load(&ok);chat=chatTwitch_.load(&ok);
     twitchFromChat_=!available(own)&&available(chat);twitchToken_=twitchFromChat_?chat:own;
+    if(youtubeToken_.value("access_token")!=oldYouTube)youtubeRetryAt_={};
+    if(twitchToken_.value("access_token")!=oldTwitch)twitchRetryAt_={};
 }
 QString PlatformProbe::googleSecret()const{
 #ifdef STREAM_NOTIFY_UI_PREVIEW
@@ -207,6 +211,7 @@ void PlatformProbe::checkKick(){
 }
 void PlatformProbe::checkYouTube(){
     if(stopping_||youtubeBusy_)return;
+    if(youtubeRetryAt_.isValid()&&QDateTime::currentDateTimeUtc()<youtubeRetryAt_)return;
     if(!available(youtubeToken_)){failYouTube("YouTube account not connected; sign in or use OZK Chat");return;}
     if(expired(youtubeToken_)){refreshYouTube();return;}
     youtubeBusy_=true;
@@ -218,7 +223,11 @@ void PlatformProbe::checkYouTube(){
         [this](int http,QJsonObject data){
             youtubeBusy_=false;
             if(http==401){refreshYouTube();return;}
-            if(http!=200){failYouTube(http==403?"YouTube permission or quota error; sign in again":QString("YouTube API HTTP %1").arg(http));return;}
+            if(http!=200){
+                if(http==429||http==403)youtubeRetryAt_=QDateTime::currentDateTimeUtc().addSecs(http==429?120:300);
+                failYouTube(http==403?"YouTube permission or quota error; sign in again":QString("YouTube API HTTP %1").arg(http));return;
+            }
+            youtubeRetryAt_={};
             LivePlatform next;next.checkedAt=QDateTime::currentDateTimeUtc();
             for(const auto& item:data.value("items").toArray()){
                 const auto object=item.toObject(),status=object.value("status").toObject();
@@ -234,6 +243,7 @@ void PlatformProbe::checkYouTube(){
 }
 void PlatformProbe::checkTwitch(){
     if(stopping_||twitchBusy_)return;
+    if(twitchRetryAt_.isValid()&&QDateTime::currentDateTimeUtc()<twitchRetryAt_)return;
     if(!available(twitchToken_)){failTwitch("Twitch account not connected; sign in or use OZK Chat");return;}
     if(twitchLogin_.isEmpty()){validateTwitch();return;}
     twitchBusy_=true;
@@ -243,7 +253,11 @@ void PlatformProbe::checkTwitch(){
         [this](int http,QJsonObject data){
             twitchBusy_=false;
             if(http==401){refreshTwitch();return;}
-            if(http!=200){failTwitch(QString("Twitch API HTTP %1").arg(http));return;}
+            if(http!=200){
+                if(http==429||http==403)twitchRetryAt_=QDateTime::currentDateTimeUtc().addSecs(http==429?120:300);
+                failTwitch(QString("Twitch API HTTP %1").arg(http));return;
+            }
+            twitchRetryAt_={};
             LivePlatform next;next.checkedAt=QDateTime::currentDateTimeUtc();
             for(const auto& item:data.value("data").toArray()){
                 const auto object=item.toObject();if(object.value("type").toString()!="live")continue;
@@ -261,7 +275,11 @@ void PlatformProbe::validateTwitch(){
         [this](int http,QJsonObject data){
             twitchBusy_=false;
             if(http==401){refreshTwitch();return;}
-            if(http!=200||data.value("client_id").toString()!=twitchApiClient()){failTwitch(QString("Twitch authorization failed (HTTP %1)").arg(http));return;}
+            if(http!=200||data.value("client_id").toString()!=twitchApiClient()){
+                if(http==429||http==403)twitchRetryAt_=QDateTime::currentDateTimeUtc().addSecs(http==429?120:300);
+                failTwitch(QString("Twitch authorization failed (HTTP %1)").arg(http));return;
+            }
+            twitchRetryAt_={};
             twitchLogin_=data.value("login").toString().toLower();
             if(twitchLogin_.isEmpty()){failTwitch("Twitch account login unavailable");return;}
             checkTwitch();

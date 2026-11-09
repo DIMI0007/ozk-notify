@@ -41,7 +41,7 @@ public:
     LivePlatform twitch()const{return twitch_;}
     LivePlatform kick()const{return kick_;}
     void stop();
-    void beginOutputSession(){kickLocal_=false;kick_={};kickManualId_.clear();lastKickId_.clear();kickRetryAt_={};}
+    void beginOutputSession(){kickLocal_=false;kick_={};kickManualId_.clear();lastKickId_.clear();kickRetryAt_={};youtubeRetryAt_={};twitchRetryAt_={};}
 private:
     using Response=std::function<void(int,QJsonObject)>;
     void request(const QUrl& url,const QByteArray& method,const QByteArray& body,
@@ -70,7 +70,7 @@ private:
     SecureStore ownYouTube_,ownTwitch_,chatYouTube_,chatTwitch_,chatKick_;
     QJsonObject youtubeToken_,twitchToken_;
     LivePlatform youtube_,twitch_,kick_;
-    QString kickFallback_,lastKickId_,kickManualId_;QDateTime kickRetryAt_;bool kickLocal_=false,kickBusy_=false;
+    QString kickFallback_,lastKickId_,kickManualId_;QDateTime kickRetryAt_,youtubeRetryAt_,twitchRetryAt_;bool kickLocal_=false,kickBusy_=false;
     QString youtubeFallback_,twitchFallback_,twitchLogin_,twitchDevice_,twitchCode_,googleVerifier_;
     QString lastYouTubeId_,lastTwitchId_;
     QDateTime twitchDeviceExpires_;

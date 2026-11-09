@@ -224,6 +224,11 @@ DonationEngine::DonationEngine(SettingsStore* settings,QObject* parent):QObject(
         if(!closing_&&!dpSignature_.isEmpty())
             ozk_bridge::publishDPProvider(dpSignature_,dpStatus_.startsWith("API connected"));
     });
+    daBridgeHeartbeat_.setInterval(15000);
+    connect(&daBridgeHeartbeat_,&QTimer::timeout,this,[this]{
+        if(!closing_&&!daSignature_.isEmpty())
+            ozk_bridge::publishDAProvider(daSignature_,daStatus_=="Connected");
+    });
     connect(&websocket_,&QWebSocket::connected,this,[this] { sn::CpuScope snCallbackScope; 
         if(closing_)return;
         QJsonObject hello{{"id",1},{"params",QJsonObject{{"token",daSocketToken_}}}};
@@ -281,10 +286,13 @@ void DonationEngine::beginDonationAlertsLogin() {
 }
 void DonationEngine::state(QString& dest,const QString& value) {
     sn::CpuScope snCpuScope;if(dest!=value){dest=value;
+        if(&dest==&daStatus_&&!daSignature_.isEmpty())
+            ozk_bridge::publishDAProvider(daSignature_,value=="Connected");
         store_->addEvent(QString(&dest==&daStatus_?"DONATIONALERTS ":"DONATEPAY ")+value);Q_EMIT updated();}}
 void DonationEngine::clearConnections() {
     sn::CpuScope snCpuScope;
-    ++daEpoch_;++dpEpoch_;daRetry_.stop();dpTimer_.stop();dpBridgeHeartbeat_.stop();
+    ++daEpoch_;++dpEpoch_;daRetry_.stop();dpTimer_.stop();dpBridgeHeartbeat_.stop();daBridgeHeartbeat_.stop();
+    ozk_bridge::clearDAProvider(daSignature_);
     ozk_bridge::clearDPProvider(dpSignature_);
     resettingSocket_=true;websocket_.abort();resettingSocket_=false;
     sender_.abortAll();
@@ -318,14 +326,19 @@ void DonationEngine::configure() {
     const QString newDA=monitoringPermitted && s.daEnabled && validBearerToken(s.daToken)?s.daToken:QString();
     const QString newDP=monitoringPermitted && s.dpEnabled && !s.dpToken.isEmpty() && s.legacyApiOptIn?s.dpToken:QString();
     if(newDA!=daSignature_) {
+        ozk_bridge::clearDAProvider(daSignature_);
         daSignature_=newDA;daRetry_.stop();
         resettingSocket_=true;websocket_.abort();resettingSocket_=false;
         ++daEpoch_;daBackoff_=0;
-        if(!newDA.isEmpty())daConnect();
+        if(!newDA.isEmpty()){
+            ozk_bridge::publishDAProvider(newDA,false);
+            daBridgeHeartbeat_.start();
+            daConnect();
+        }else daBridgeHeartbeat_.stop();
     }
     if(newDP!=dpSignature_) {
         ozk_bridge::clearDPProvider(dpSignature_);
-        dpSignature_=newDP;dpTimer_.stop();++dpEpoch_;dpBackoff_=0;dpPrimed_=false;dpBaseline_.clear();
+        dpSignature_=newDP;dpTimer_.stop();++dpEpoch_;dpBackoff_=0;dpRateLimitCount_=0;dpPrimed_=false;dpBaseline_.clear();
         if(!newDP.isEmpty()){
             state(dpStatus_,"Connecting");
             ozk_bridge::publishDPProvider(newDP,false);
@@ -415,7 +428,10 @@ void DonationEngine::daReceive(const QString& raw) {
     const QString reason=payload.value("reason").toString();
     if(!reason.isEmpty() && reason!="create" && reason!="new")return;
     Donation d=parseDonationAlerts(payload);
-    if(!d.id.isEmpty())onDonation(d);
+    if(!d.id.isEmpty()){
+        ozk_bridge::publishDA(daSignature_,payload);
+        onDonation(d);
+    }
 }
 void DonationEngine::daReconnect() {
     sn::CpuScope snCpuScope;
@@ -461,14 +477,19 @@ void DonationEngine::dpPoll() {
             }
             if(response.rateLimited){
                 bool valid=false;const double seconds=retryAfter.toDouble(&valid);
-                const int delay=valid&&std::isfinite(seconds)&&seconds>0?int(std::min(seconds,3600.0)*1000):60000;
+                dpRateLimitCount_=std::min(dpRateLimitCount_+1,4);
+                const int backoff=60000*(1<<(dpRateLimitCount_-1));
+                const int serverDelay=valid&&std::isfinite(seconds)&&seconds>0?
+                    int(std::min(seconds,3600.0)*1000):0;
+                const int delay=std::max(backoff,serverDelay);
                 ozk_bridge::publishDPProvider(dpSignature_,false);
-                dpTimer_.start(std::max(30000,delay));return;
+                dpTimer_.start(delay);return;
             }
             ozk_bridge::publishDPProvider(dpSignature_,false);
             dpReconnect();return;
         }
         const auto rows=response.rows;
+        dpRateLimitCount_=0;
         // Publish before baseline/notification deduplication: Donations must also recover
         // records already notified earlier, without sending Telegram/Discord again.
         ozk_bridge::publishDP(dpSignature_,rows);

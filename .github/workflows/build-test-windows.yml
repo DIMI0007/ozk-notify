@@ -89,7 +89,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
-          name: OZKNotify-1.0.22-OBS33-Windows-x64
+          name: OZKNotify-1.0.23-OBS33-Windows-x64
           path: package/
           if-no-files-found: error
 
