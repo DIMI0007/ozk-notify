@@ -66,7 +66,10 @@ void Sender::start(const std::shared_ptr<Task>& task)
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json; charset=utf-8");
     req.setHeader(QNetworkRequest::UserAgentHeader, "StreamNotify/1.0 (OBS plugin)");
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
-    req.setTransferTimeout(10000);
+    // A live stream can saturate the uplink. Wait longer for Discord's
+    // confirmation; do not replay an ambiguous POST because it may duplicate
+    // an announcement that Discord already accepted.
+    req.setTransferTimeout(task->channel == Channel::Discord ? 30000 : 10000);
     task->body=QJsonDocument(payload).toJson(QJsonDocument::Compact);
     QNetworkReply* reply = sn::watchReply(nam_.post(req,task->body),task->body);
     active_.insert(reply);
